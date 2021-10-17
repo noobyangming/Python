@@ -22,12 +22,14 @@ df_source=pd.read_excel('stock_all.xlsx',header=0,sheet_name='Sheet1',skipfooter
 # print(x)
 
 
+
 '''windpy包的使用''' #https://www.windquant.com/qntcloud/apiRefHelp/id-b89ae6bf-17db-40d6-8f7c-123702a30755
 # from WindPy import * #pycharm安装时一定需要将WindPy.pth(可以自己建立，里面存放路径D:\Program Files\wind\x64)放入到项目目录下面(如D:\Python\Program\venv\Lib\site-packages)
 # w.start() #启动windpy
 # a=w.wsd("000001.SZ", "low,close", "2021-09-17", "2021-10-16", "") #拉取wind数据第一个为Codes，第二个为Fields，第三和第四个为Times的起止时间
 # fm=pd.DataFrame(a.Data,index=a.Fields,columns=a.Times)    #将winddata转化为dataframe，注意此时的数据还是为转置的
 # fm=fm.T #转置，获得最终需要的dataframe数据
+
 
 
 '''此文件用于链接mysql数据库'''
@@ -75,3 +77,35 @@ fm=fm.T #转置
 engine = create_engine('mysql+pymysql://root:yangming@localhost:3306/stock_data?charset=utf8')  # 构建导入引擎
 con = engine.connect()
 fm.to_sql('s_data', con=engine, index=True, if_exists='append') # 数据导入sql数据库
+
+
+
+'''此文件用于从描述量化策略，文件从excel中读取''' 
+#stock量化基础v1.0
+import pandas as pd
+
+#导入execl数据
+df_source = pd.read_excel('stock.xlsx',header=0,sheet_name='Sheet1',skipfooter=0)  #目标表格数据, shipfooter是删除末尾*行的意思
+
+#通过wind导出的数据进行stock量化分析
+sdate = '2019-01-01 0:0:0'
+sn_list=list(df_source.drop_duplicates(subset=['简称'],keep='first',inplace=False).简称)
+drop_times = 4
+for sn in sn_list:
+    df_stock = df_source[(df_source["简称"] == sn)&(df_source['日期'] > sdate)][['简称','日期','涨跌幅']] #多条件筛选+列表筛选连用
+    df_stock = df_stock.reset_index(drop=True)  #重构索引
+    df_stock = df_stock.fillna(value=0)    #空值填充为0
+    sample_num = 0.0001  # 样本数量归零
+    bingo_num = 0  # 命中数量归零
+    for n in range(df_stock.shape[0]-drop_times):
+        '''针对每只股票数据进行量化处理'''
+        for i in range(drop_times):
+            if df_stock.涨跌幅[n+i]>=0:
+                break
+            if i == (drop_times-1):
+                sample_num += 1
+                # print(df_stock.涨跌幅[n+i])
+                if df_stock.涨跌幅[n+drop_times]>=0:
+                    bingo_num += 1
+                    # print(df_stock.涨跌幅[n+drop_times])
+    print(sn,int(sample_num),bingo_num,bingo_num/sample_num)
