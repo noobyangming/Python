@@ -28,3 +28,50 @@ df_source=pd.read_excel('stock_all.xlsx',header=0,sheet_name='Sheet1',skipfooter
 # a=w.wsd("000001.SZ", "low,close", "2021-09-17", "2021-10-16", "") #拉取wind数据第一个为Codes，第二个为Fields，第三和第四个为Times的起止时间
 # fm=pd.DataFrame(a.Data,index=a.Fields,columns=a.Times)    #将winddata转化为dataframe，注意此时的数据还是为转置的
 # fm=fm.T #转置，获得最终需要的dataframe数据
+
+
+'''此文件用于链接mysql数据库'''
+import pymysql
+#创建数据库链接，注意再创建数据库的时候格式选择utf-8，否则后面建表的时候会出错
+con = pymysql.connect(host='localhost',user='root',password='yangming',database='stock_data',port=3306)
+cur = con.cursor()
+sql = """
+    create table s_data(
+    id int primary key auto_increment,
+    s_code varchar(30) not null,
+    chg float(3,1),
+    pct_chg float(3,1),
+    industry_sw_2021 varchar(30) not null
+    ) 
+"""
+try:
+    # 执行创建表的sql
+    cur.execute(sql)
+    print("创建表成功")
+except Exception as e:
+    print("创建表失败")
+    print(e)
+finally:
+    # 关闭连接
+    con.close()
+    
+    
+'''此文件用于从wind数据库拉出数据，并存入数据库sql，或者csv文件''' 
+from WindPy import *
+import pandas as pd
+from sqlalchemy import create_engine
+
+w.start()
+code_list = ["000552.SZ","000571.SZ"]
+a=w.wsd("000552.SZ", "trade_code,sec_name,chg,pct_chg,industry_sw_2021", "2019-01-01", "2021-10-15", "industryType=1;PriceAdj=F") #从wind拉取数据，数据维度可以自由选择，date作为index
+fm=pd.DataFrame(a.Data,index=a.Fields,columns=a.Times)  #将WindData的数据格式转化为dataframe
+fm=fm.T #转置
+# print(fm.head())
+
+# 数据存入csv文件
+# fm.to_csv('D:\\a.csv', sep=',', header=True, index=True, encoding = 'utf_8_sig') 
+
+# 数据存到数据库
+engine = create_engine('mysql+pymysql://root:yangming@localhost:3306/stock_data?charset=utf8')  # 构建导入引擎
+con = engine.connect()
+fm.to_sql('s_data', con=engine, index=True, if_exists='append') # 数据导入sql数据库
