@@ -57,6 +57,35 @@ finally:
     # 关闭连接
     con.close()
     
+
+'''Excel操作，新建文件和sheet，存入数据，并保存'''
+from openpyxl import Workbook
+
+wb = Workbook() #实例化一个excel文件
+dest_filename = 'mybook.xlsx'   #命名
+
+ws1=wb.active   #打开表格
+ws1.title='rangenames'  #新建sheet
+
+for row in range(1,20): #在sheet中塞入数据
+    ws1.append(range(50))
+
+wb.save(filename = dest_filename)   #保存excel
+
+
+'''Excel操作，打开已有文件，写入数据，并保存'''
+a = ['a','b','c']
+def writeFile(content):
+    data = openpyxl.load_workbook('mybook.xlsx')
+    table = data['rangenames'] #指定sheet
+    table.append(list(content))  # 如果content是列表，直接传就行，如果是字典或者dataframe则需要用对应的方法，如.values()
+    data.save('mybook.xlsx')
+
+writeFile(a)
+
+
+
+    
     
 '''此文件用于从wind数据库拉出数据，并存入数据库sql，或者csv文件''' 
 from WindPy import *
