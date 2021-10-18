@@ -18,8 +18,20 @@ df_source=pd.read_excel('stock_all.xlsx',header=0,sheet_name='Sheet1',skipfooter
 # x=df_source.T #数据表反转dataframe-T
 # x=df_source.日期[2] #用类似类+列表的方式选取数据
 # x=list(df_source.drop_duplicates(subset=['简称'],keep='first',inplace=False).简称)  #针对"简称"列进行去重，并将获得的列转为一个数组
-# x=df_source[(df_source["简称"] == '有友食品')&(df_source['日期'] > '2019-5-15 0:0:0')]  #多条件筛选
-# print(x)
+# x=df_source[(df_source["简称"] == '有友食品')&(df_source['日期'] > '2019-5-15 0:0:0')]  #多条件筛选,&表示且，|表示或
+# df_source.shape  #.shape表示行列，.dtpyes表示列数据类型，.ndim数据维度，.index行索引，.columns列索引，.values对象值，二维ndarray数组，.head()显示头几行，.tail()尾部几行，.info相关信息预览，.describe()统计结果
+# df=df_source.sort_values(by="市净率",ascending=False) #按照某一列进行排序
+# df[:20]['市净率'] #方括号里面写数组表示对行操作，写字符串表示对列进行操作（取出来的就是series类型）,切片操作，注意行必须有”：“
+# print(df_source.loc[:,["总市值(元)",'简称']]) #loc操作，选择某些列
+# print(df_source.loc[[1,2,3,4]]) #选择某些行
+# print(df_source.loc[[1,2,3,4],["总市值(元)",'简称']]) #选择某些行列
+# print(df_source.iloc[[0,2,3,4],[0,2,4,17]]) #iloc通过位置获取，只能选择数组位置
+# print(df_source[df_source['简称'].str.len()>1]) #str有很多方法，contains、conut、len、upper、split、replace。注意有时和tolist()连用转换为列表
+# print(df_source[pd.isnull(df_source['前收盘价(元)'])])   # 选出“前收盘价(元)”为空值的行
+# print(df_source.dropna(axis=0, how='all')) #nan处理。删除有nan的行,how='all'/'any'，如果是all表示整行都是nan，any表示至少有一个nan，inplace=True是原地修改
+# print(df_source.fillna(100)) #nan处理。填充nan。或者填充均值，df_source['前收盘价(元)'].fillna(df_source['前收盘价(元)'].mean())
+# df=df_source['市盈率'].values  #df是ndarry格式，print(type(df))
+# print(type(df))
 
 
 
