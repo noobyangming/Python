@@ -44,7 +44,7 @@ df_source=pd.read_excel('stock_all.xlsx',header=0,sheet_name='Sheet1',skipfooter
 
 
 
-'''此文件用于链接mysql数据库'''
+'''此文件用于链接mysql数据库，通过pandas在mysql中表'''
 import pymysql
 #创建数据库链接，注意再创建数据库的时候格式选择utf-8，否则后面建表的时候会出错
 con = pymysql.connect(host='localhost',user='root',password='yangming',database='stock_data',port=3306)
@@ -68,6 +68,17 @@ except Exception as e:
 finally:
     # 关闭连接
     con.close()
+    
+    
+'''此文件用于链接mysql数据库，通过pandas读取mysql中数据'''
+import pandas as pd
+import pymysql
+con = pymysql.connect(host='localhost',user='root',password='yangming',database='stock',port=3306) #数据链接
+sql = 'select * from s_data' #sql查询语句
+df_sql=pd.read_sql(sql, con)    #调取数据库数据
+print(df_sql.head())   
+    
+    
     
 
 '''Excel操作，新建文件和sheet，存入数据，并保存'''
@@ -94,7 +105,6 @@ def writeFile(content):
     data.save('mybook.xlsx')
 
 writeFile(a)
-
 
 
     
