@@ -139,13 +139,13 @@ import pandas as pd
 df_source = pd.read_excel('stock.xlsx',header=0,sheet_name='Sheet1',skipfooter=0)  #目标表格数据, shipfooter是删除末尾*行的意思
 
 '''此代码用于数据进行stock量化分析,并将结果存入df对象'''
-sdate = ['2019-01-01 0:0:0', '2020-01-01 0:0:0', '2021-01-01 0:0:0']
+sdate = ['2019-01-01 0:0:0', '2020-01-01 0:0:0', '2021-01-01 0:0:0', '2022-01-01 0:0:0']
 sn_list = list(df_source.drop_duplicates(subset=['简称'], keep='first', inplace=False).简称)
-drop_times = 4
+drop_times = 2
 df_output = pd.DataFrame(columns=["简称", "下跌4次后上涨", "下跌4次", "比率", "统计起期"])
-for sd in sdate:
+for a in range(3):
     for sn in sn_list:
-        df_stock = df_source[(df_source["简称"] == sn)&(df_source['日期'] > sd)][['简称','日期','涨跌幅']] #多条件筛选+列表筛选连用
+        df_stock = df_source[(df_source["简称"] == sn)&(df_source['日期'] > sdate[a])&(df_source['日期'] < sdate[a+1])][['简称','日期','涨跌幅']] #多条件筛选+列表筛选连用
         df_stock = df_stock.reset_index(drop=True)  #重构索引
         df_stock = df_stock.fillna(value=0)    #空值填充为0
         sample_num = 0.0001  # 样本数量归零
@@ -162,12 +162,11 @@ for sd in sdate:
                         bingo_num += 1
                         # print(df_stock.涨跌幅[n+drop_times])
         # print(sn,int(sample_num),bingo_num,bingo_num/sample_num)
-        df_output = df_output.append(pd.DataFrame({"简称":[sn], "下跌4次后上涨":[int(sample_num)], "下跌4次":[bingo_num], "比率":[bingo_num/sample_num], "统计起期":[sd]}),ignore_index=True)
+        df_output = df_output.append(pd.DataFrame({"简称":[sn], "下跌4次后上涨":[int(sample_num)], "下跌4次":[bingo_num], "比率":[bingo_num/sample_num], "统计起期":[sdate[a]]}),ignore_index=True)
 # print((df_output))
-# 同一个excel可以直接建立新的sheet，不会每次都覆盖老的sheet
-book = load_workbook('output.xlsx')
-writer = pd.ExcelWriter('output.xlsx', engine='openpyxl')
+book = load_workbook('output2.xlsx')
+writer = pd.ExcelWriter('output2.xlsx', engine='openpyxl')
 writer.book = book
 writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-df_output.to_excel(writer , sheet_name="4次",encoding='utf-8', index=False, header=True)
+df_output.to_excel(writer , sheet_name="2次",encoding='utf-8', index=False, header=True)
 writer.save()
