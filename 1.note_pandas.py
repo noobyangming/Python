@@ -164,4 +164,10 @@ for sd in sdate:
         # print(sn,int(sample_num),bingo_num,bingo_num/sample_num)
         df_output = df_output.append(pd.DataFrame({"简称":[sn], "下跌4次后上涨":[int(sample_num)], "下跌4次":[bingo_num], "比率":[bingo_num/sample_num], "统计起期":[sd]}),ignore_index=True)
 # print((df_output))
-df_output.to_excel('output.xlsx',encoding='utf-8', index=False, header=True)
+# 同一个excel可以直接建立新的sheet，不会每次都覆盖老的sheet
+book = load_workbook('output.xlsx')
+writer = pd.ExcelWriter('output.xlsx', engine='openpyxl')
+writer.book = book
+writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+df_output.to_excel(writer , sheet_name="4次",encoding='utf-8', index=False, header=True)
+writer.save()
