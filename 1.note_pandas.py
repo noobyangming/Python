@@ -156,9 +156,11 @@ import pandas as pd
 df_source = pd.read_excel('stock.xlsx',header=0,sheet_name='Sheet1',skipfooter=0)  #目标表格数据, shipfooter是删除末尾*行的意思
 
 '''此代码用于数据进行stock量化分析,并将结果存入df对象'''
+#通过wind导出的数据进行stock量化分析
 sdate = ['2019-01-01 0:0:0', '2020-01-01 0:0:0', '2021-01-01 0:0:0', '2022-01-01 0:0:0']
+# sdate = ['2020-01-01 0:0:0', '2021-01-01 0:0:0']
 sn_list = list(df_source.drop_duplicates(subset=['简称'], keep='first', inplace=False).简称)
-drop_times = 2
+drop_times = 4
 df_output = pd.DataFrame(columns=["简称", "下跌4次后上涨", "下跌4次", "比率", "统计起期"])
 for a in range(3):
     for sn in sn_list:
@@ -167,7 +169,8 @@ for a in range(3):
         df_stock = df_stock.fillna(value=0)    #空值填充为0
         sample_num = 0.0001  # 样本数量归零
         bingo_num = 0  # 命中数量归零
-        for n in range(df_stock.shape[0]-drop_times):
+        # category = df_stock.行业分类[0] #传递行业分类
+        for n in range(df_stock.shape[0]-drop_times):   #返回dataframe行列，shape[0]=rows,shape[1]=columns
             '''针对每只股票数据进行量化处理'''
             for i in range(drop_times):
                 if df_stock.涨跌幅[n+i]>=0:
@@ -181,9 +184,9 @@ for a in range(3):
         # print(sn,int(sample_num),bingo_num,bingo_num/sample_num)
         df_output = df_output.append(pd.DataFrame({"简称":[sn], "下跌4次后上涨":[int(sample_num)], "下跌4次":[bingo_num], "比率":[bingo_num/sample_num], "统计起期":[sdate[a]]}),ignore_index=True)
 # print((df_output))
-book = load_workbook('output2.xlsx')
-writer = pd.ExcelWriter('output2.xlsx', engine='openpyxl')
+book = load_workbook('output.xlsx')
+writer = pd.ExcelWriter('output.xlsx', engine='openpyxl')
 writer.book = book
 writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-df_output.to_excel(writer , sheet_name="2次",encoding='utf-8', index=False, header=True)
+df_output.to_excel(writer, sheet_name="4次", encoding='utf-8', index=False, header=True)
 writer.save()
