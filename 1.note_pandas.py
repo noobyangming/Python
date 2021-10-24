@@ -112,22 +112,39 @@ writeFile(a)
 '''此文件用于从wind数据库拉出数据，并存入数据库sql，或者csv文件''' 
 from WindPy import *
 import pandas as pd
+import pymysql
 from sqlalchemy import create_engine
+from tools import query
 
-w.start()
-code_list = ["000552.SZ","000571.SZ"]
-a=w.wsd("000552.SZ", "trade_code,sec_name,chg,pct_chg,industry_sw_2021", "2019-01-01", "2021-10-15", "industryType=1;PriceAdj=F") #从wind拉取数据，数据维度可以自由选择，date作为index
-fm=pd.DataFrame(a.Data,index=a.Fields,columns=a.Times)  #将WindData的数据格式转化为dataframe
-fm=fm.T #转置
-# print(fm.head())
-
-# 数据存入csv文件
-# fm.to_csv('D:\\a.csv', sep=',', header=True, index=True, encoding = 'utf_8_sig') 
-
-# 数据存到数据库
+#从excel中导入目标股票代码
+df = pd.read_excel('all.xlsx', sheet_name='Sheet1',usecols=['代码'])
 engine = create_engine('mysql+pymysql://root:yangming@localhost:3306/stock_data?charset=utf8')  # 构建导入引擎
 con = engine.connect()
-fm.to_sql('s_data', con=engine, index=True, if_exists='append') # 数据导入sql数据库
+df.to_sql('s_code', con=engine, index=False, if_exists='replace') # 数据导入sql数据库
+
+#从sql中读取目标股票代码，并放入list中
+con = pymysql.connect(host='localhost',user='root',password='yangming',database='stock_data',port=3306) #数据链接
+sql = 'select * from s_code' #sql查询语句
+df_code = pd.read_sql(sql, con)    #调取数据库数据
+code_list=df_code['代码'].values.tolist() #将df格式中的code列转化为列表
+print(code_list)
+# code_list = ['600519.SH']
+#从wind中拉取数据
+w.start()
+for code in code_list:
+    a=w.wsd(code, "industry_sw_2021,close,open,high,low,amt,chg,pct_chg,swing,vwap,turn,ev,pe_ttm", "2021-01-01", "2021-10-23", "industryType=1;unit=1;PriceAdj=F") #从wind拉取数据，数据维度可以自由选择，date作为index
+    # print(a)
+    fm=pd.DataFrame(a.Data,index=a.Fields,columns=a.Times)  #将WindData的数据格式转化为dataframe
+    fm=fm.T #转置
+    print(fm.head())
+    # fm.to_csv('D:\\a.csv', sep=',', header=True, index=True, encoding = 'utf_8_sig') #
+
+    # 构建导入引擎
+    engine = create_engine('mysql+pymysql://root:yangming@localhost:3306/stock_data?charset=utf8')
+    #  df是已有的Dataframe类型数据
+    fm.to_sql('s_data', con=engine, index=True, if_exists='replace')
+
+
 
 
 
