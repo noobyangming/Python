@@ -1,0 +1,5 @@
+#将个表的一列通过字段匹配到另一个表
+UPDATE s_data1 SET 行业分类 = (SELECT 一级行业分类 FROM s_code WHERE s_code.代码 = s_data1.代码);
+
+#新建列
+*ALTER TABLE s_data1 ADD COLUMN 行业分类 TEXT NOT NULL;
