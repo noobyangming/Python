@@ -1,5 +1,19 @@
-#��������һ��ͨ���ֶ�ƥ�䵽��һ����
-UPDATE s_data1 SET ��ҵ���� = (SELECT һ����ҵ���� FROM s_code WHERE s_code.���� = s_data1.����);
+#将个表的一列通过字段匹配到另一个表
+UPDATE s_data1 SET 行业分类 = (SELECT 一级行业分类 FROM s_code WHERE s_code.代码 = s_data1.代码);
 
-#�½���
-*ALTER TABLE s_data1 ADD COLUMN ��ҵ���� TEXT NOT NULL;
+#新建列
+*ALTER TABLE s_data1 ADD COLUMN 行业分类 TEXT NOT NULL;
+
+
+SELECT COUNT(*) FROM s_data;
+
+
+#改变字段类型
+ALTER TABLE s_data MODIFY COLUMN 行业分类 VARCHAR(10);
+ALTER TABLE s_code MODIFY COLUMN 代码 VARCHAR(10);
+
+
+SELECT * FROM s_data LIMIT 400000,1; #查看第400000行
+
+代码,简称,行业分类
+
