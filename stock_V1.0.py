@@ -109,3 +109,31 @@ for t in t_list:
 df_target_stock = pd.DataFrame(target_stock, columns=["简称"]) #list转为df
 df_target_stock.to_excel("target1026.xlsx",index=False) #存入excel
 # print(target_stock)
+
+
+
+"""希望十字星model"""
+import pandas as pd
+from sqlalchemy import create_engine
+from openpyxl import load_workbook
+import pymysql
+
+'''此代码用于从mysql中读取数据，导出分析数据时需要；导出目标stock时也需要'''
+con = pymysql.connect(host='localhost',user='root',password='yangming',database='stock_data',port=3306) #数据链接
+sql = 'select * from s_data1' #sql查询语句
+df_sql=pd.read_sql(sql, con)    #调取数据库数据
+df_source = df_sql.dropna(axis=0, how='any') #去除含有空置的列
+
+#通过wind导出的数据进行stock量化分析，用于导出分析样本数据
+sn = '有友食品'
+df_stock = df_source[(df_source["简称"] == sn)] #多条件筛选+列表筛选连用
+# df_stock = df_stock.fillna(value=0)    #空值填充为0
+df_stock = df_stock.reset_index(drop=True)  #重构索引
+for i in range(100):
+    v1 = 0.98
+    a = df_stock['收盘价(元)'][i]/df_stock['最高价(元)'][i]
+    b = df_stock['开盘价(元)'][i]/df_stock['最低价(元)'][i]
+    c = (df_stock['收盘价(元)'][i]-df_stock['开盘价(元)'][i])/df_stock['前收盘价(元)'][i]*100
+    # if a > v1 and b > v1 and c > 2:
+    #     print(df_stock['日期'][i])
+    print(a,b,c)
